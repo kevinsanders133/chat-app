@@ -7,6 +7,8 @@ import axios from "axios";
 import { io } from "socket.io-client";
 import { sendMessageRoute, recieveMessageRoute } from "../utils/APIRoutes";
 
+
+
 export default function ChatContainer({ currentChat, currentUserId }) {
   const [messages, setMessages] = useState([]);
   const scrollRef = useRef();
@@ -37,16 +39,32 @@ export default function ChatContainer({ currentChat, currentUserId }) {
 
   const handleSendMsg = async (msg) => {
     const data = await JSON.parse(localStorage.getItem("chat-app-current-user"));
-    console.log(data);
+    const file = document.querySelector(".input-file").files?.[0];
+    let urlFILE = '';
+    let type = '';
+
+    if (file) {
+      urlFILE = URL.createObjectURL(file);
+      const lengthSplited = file.name.split('.').length;
+      const ext = file.name.split('.')[lengthSplited - 1];
+      if (['jpg', 'jpeg', 'png', 'svg'].includes(ext)) {
+        type = 'image';
+      } else if (ext === 'mp4') {
+        type = 'video';
+      } else {
+        type = 'text';
+      }
+    }
+
     socket.current.emit("sendmessage", {
       to: currentChat._id,
       from: data._id,
-      msg,
-    });
-    await axios.post(sendMessageRoute, {
-      from: data._id,
-      to: currentChat._id,
-      message: msg,
+      text: msg,
+      msg: {
+        filename: file.name,
+        blob: urlFILE,
+        type
+      },
     });
 
     const msgs = [...messages];
@@ -79,13 +97,6 @@ export default function ChatContainer({ currentChat, currentUserId }) {
     <Container>
       <div className="chat-header">
         <div className="user-details">
-          <div className="avatar">
-            {/* <img
-              // src={`data:image/svg+xml;base64,${currentChat.avatarImage}`}
-              src={'https://www.google.com/url?sa=i&url=https%3A%2F%2Fwww.apple.com%2Fpl%2Fmac%2F&psig=AOvVaw1qguXPGtT55klebBAZZsps&ust=1673876714369000&source=images&cd=vfe&ved=0CBAQjRxqFwoTCKD53unayfwCFQAAAAAdAAAAABAD'}
-              alt=""
-            /> */}
-          </div>
           <div className="username">
             <h3>{currentChat.username}</h3>
           </div>

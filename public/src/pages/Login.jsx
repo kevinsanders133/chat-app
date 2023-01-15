@@ -36,7 +36,7 @@ export default function Login() {
     event.preventDefault();
     if (validateForm()) {
       const { email, password } = values;
-      const { data } = await axios.post(loginRoute, {
+      const { data } = await axios.post(`http://localhost:5001/api/auth/login`, {
         email,
         password
       });

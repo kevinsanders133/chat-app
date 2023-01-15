@@ -14,6 +14,10 @@ const queries = {
     selectAllChats: `
         SELECT * FROM chats;
     `,
+    insertMessage: `
+        INSERT INTO messages (type, data, chat_id, sernder_id)
+        VALUES (?, ?, ?, ?)
+    `
 }
 
 module.exports = { queries };

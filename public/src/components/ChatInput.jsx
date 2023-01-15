@@ -3,6 +3,7 @@ import { BsEmojiSmileFill } from "react-icons/bs";
 import { IoMdSend } from "react-icons/io";
 import styled from "styled-components";
 import Picker from "emoji-picker-react";
+import Attachment from '../assets/attachment.svg';
 
 export default function ChatInput({ handleSendMsg }) {
   const [msg, setMsg] = useState("");
@@ -33,6 +34,10 @@ export default function ChatInput({ handleSendMsg }) {
           {showEmojiPicker && <Picker onEmojiClick={handleEmojiClick} />}
         </div>
       </div>
+      <div className="button-container">
+        <img src={Attachment} width="30px" height="30px" className="input-file-image" />
+        <input type="file" className="input-file" />
+      </div>
       <form className="input-container" onSubmit={(event) => sendChat(event)}>
         <input
           type="text"
@@ -49,17 +54,32 @@ export default function ChatInput({ handleSendMsg }) {
 }
 
 const Container = styled.div`
-  display: grid;
+  display: flex;
   align-items: center;
-  grid-template-columns: 5% 95%;
+  justify-content: space-between;
   background-color: #080420;
   padding: 0 2rem;
   @media screen and (min-width: 720px) and (max-width: 1080px) {
     padding: 0 1rem;
     gap: 1rem;
   }
+  .input-file {
+    width: 50px;
+    height: 50px;
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 100;
+    opacity: 0;
+  }
+  .input-file-image {
+    transform: rotate(180deg);
+    filter: invert(93%) sepia(93%) saturate(0%) hue-rotate(250deg) brightness(107%) contrast(108%);
+  }
   .button-container {
+    position: relative;
     display: flex;
+    width: fit-content;
     align-items: center;
     color: white;
     gap: 1rem;
@@ -99,7 +119,7 @@ const Container = styled.div`
     }
   }
   .input-container {
-    width: 100%;
+    width: 88%;
     border-radius: 2rem;
     display: flex;
     align-items: center;
