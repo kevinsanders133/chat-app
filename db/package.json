@@ -20,6 +20,8 @@
     "mongoose": "^6.2.1",
     "mysql": "^2.18.1",
     "nodemon": "^2.0.15",
-    "socket.io": "^4.4.1"
+    "socket.io": "^4.4.1",
+    "tedious": "^15.1.2",
+    "uuid": "^9.0.0"
   }
 }

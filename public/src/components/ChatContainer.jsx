@@ -6,8 +6,16 @@ import { v4 as uuidv4 } from "uuid";
 import axios from "axios";
 import { io } from "socket.io-client";
 import { sendMessageRoute, recieveMessageRoute } from "../utils/APIRoutes";
+import { BlobServiceClient, ContainerClient} from '@azure/storage-blob';
+import ChatText from "./ChatText";
+import ChatImage from "./ChatImage";
+import ChatVideo from "./ChatVideo";
+import ChatFile from "./ChatFile";
+import './Chat.css';
 
-
+const containerName = 'messages';
+const sasToken = '?sv=2021-06-08&ss=bf&srt=co&sp=rwdlaciytfx&se=2023-01-17T02:13:47Z&st=2023-01-16T18:13:47Z&spr=https,http&sig=pf9iUWWJLBFuFzOgAHUFNA6gsW00Qmtu%2BWvM447MFUU%3D';
+const storageAccountName = 'chatstorage123';
 
 export default function ChatContainer({ currentChat, currentUserId }) {
   const [messages, setMessages] = useState([]);
@@ -16,12 +24,8 @@ export default function ChatContainer({ currentChat, currentUserId }) {
   const [arrivalMessage, setArrivalMessage] = useState(null);
 
   useEffect(async () => {
-    const data = await JSON.parse(
-      localStorage.getItem(process.env.REACT_APP_LOCALHOST_KEY)
-    );
     const response = await axios.post(recieveMessageRoute, {
-      from: data._id,
-      to: currentChat._id,
+      chatId: currentChat.id,
     });
     setMessages(response.data);
   }, [currentChat]);
@@ -31,44 +35,98 @@ export default function ChatContainer({ currentChat, currentUserId }) {
       if (currentChat) {
         await JSON.parse(
           localStorage.getItem(process.env.REACT_APP_LOCALHOST_KEY)
-        )._id;
+        ).id;
       }
     };
     getCurrentChat();
   }, [currentChat]);
 
+  const createBlobInContainer = async (containerClient, file, fileName) => {
+  
+    // create blobClient for container
+    const blobClient = containerClient.getBlockBlobClient(fileName);
+  
+    // set mimetype as determined from browser with file upload control
+    const options = { blobHTTPHeaders: { blobContentType: file.type } };
+  
+    // upload file
+    await blobClient.uploadData(file, options);
+  }
+
+  const getBlobsInContainer = async (containerClient) => {
+    const returnedBlobUrls = [];
+  
+    // get list of blobs in container
+    // eslint-disable-next-line
+    for await (const blob of containerClient.listBlobsFlat()) {
+      // if image is public, just construct URL
+      returnedBlobUrls.push(
+        `https://${storageAccountName}.blob.core.windows.net/${containerName}/${blob.name}`
+      );
+    }
+  
+    return returnedBlobUrls;
+  }
+
   const handleSendMsg = async (msg) => {
     const data = await JSON.parse(localStorage.getItem("chat-app-current-user"));
-    const file = document.querySelector(".input-file").files?.[0];
-    let urlFILE = '';
-    let type = '';
+    const input = document.querySelector(".input-file");
+    const file = input.files?.[0];
+    const msgs = [...messages];
 
-    if (file) {
-      urlFILE = URL.createObjectURL(file);
+    if (file !== undefined) {
+
       const lengthSplited = file.name.split('.').length;
       const ext = file.name.split('.')[lengthSplited - 1];
+      let type = '';
+
+      const fileName = `${Date.now()}-${file.name}`;
+
       if (['jpg', 'jpeg', 'png', 'svg'].includes(ext)) {
         type = 'image';
       } else if (ext === 'mp4') {
         type = 'video';
       } else {
-        type = 'text';
+        type = 'file';
       }
+
+      // get BlobService = notice `?` is pulled out of sasToken - if created in Azure portal
+      const blobService = new BlobServiceClient(
+        `https://${storageAccountName}.blob.core.windows.net/?${sasToken}`
+      );
+
+      // get Container - full public read access
+      const containerClient = blobService.getContainerClient(containerName);
+      // await containerClient.createIfNotExists({
+      //   access: 'container',
+      // });
+
+      // upload file
+      await createBlobInContainer(containerClient, file, fileName);
+
+      // get list of blobs in container
+      const list = await getBlobsInContainer(containerClient);
+      console.log(list);
+
+      socket.current.emit("sendmessage", {
+        from: data._id,
+        type,
+        data: fileName
+      });
+
+      msgs.push({ sender_id: data._id, type, data: fileName });
     }
 
-    socket.current.emit("sendmessage", {
-      to: currentChat._id,
-      from: data._id,
-      text: msg,
-      msg: {
-        filename: file.name,
-        blob: urlFILE,
-        type
-      },
-    });
+    if (msg !== '') {
+      socket.current.emit("sendmessage", {
+        from: data._id,
+        type: 'text',
+        data: msg
+      });
+  
+      msgs.push({ sender_id: data._id, type: "text", data: msg });
+    }
 
-    const msgs = [...messages];
-    msgs.push({ fromSelf: true, message: msg });
     setMessages(msgs);
   };
 
@@ -76,9 +134,16 @@ export default function ChatContainer({ currentChat, currentUserId }) {
     socket.current = io("http://localhost:5000");
     socket.current.emit("adduser", currentUserId, currentChat.id);
     
-    socket.current.on("updatechat", (data) => {
-      setArrivalMessage({ fromSelf: false, message: data.msg });
+    socket.current.on("updatechat", (message) => {
+      console.log(message);
+      if (currentUserId != message.sender_id) {
+        setArrivalMessage({ sender_id: message.sender_id, type: message.type, data: message.data });
+      }
     });
+
+    setTimeout(() => {
+      scrollRef.current?.scrollIntoView({ behavior: "smooth" });
+    }, 500)
 
     return () => {
       socket.current.disconnect();
@@ -104,21 +169,19 @@ export default function ChatContainer({ currentChat, currentUserId }) {
         <Logout />
       </div>
       <div className="chat-messages">
-        {messages.map((message) => {
-          return (
-            <div ref={scrollRef} key={uuidv4()}>
-              <div
-                className={`message ${
-                  message.fromSelf ? "sended" : "recieved"
-                }`}
-              >
-                <div className="content ">
-                  <p>{message.message}</p>
-                </div>
-              </div>
-            </div>
-          );
+        {messages.map((message, index) => {
+          switch (message.type) {
+            case "text":
+              return <ChatText key={index} side={`${message.sender_id == currentUserId ? "sended" : "recieved"}`} data={message.data} />;
+            case "image":
+              return <ChatImage key={index} side={`${message.sender_id == currentUserId ? "sended" : "recieved"}`} data={message.data} />;
+            case "video":
+              return <ChatVideo key={index} side={`${message.sender_id == currentUserId ? "sended" : "recieved"}`} data={message.data} />;
+            case "file":
+              return <ChatFile key={index} side={`${message.sender_id == currentUserId ? "sended" : "recieved"}`} data={message.data} />;
+          }
         })}
+        <div ref={scrollRef}></div>
       </div>
       <ChatInput handleSendMsg={handleSendMsg} />
     </Container>

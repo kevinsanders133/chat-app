@@ -34,6 +34,11 @@ export default function Chat() {
     }
   }, [currentUser]);
 
+  const updateChats = async () => {
+    const data = await axios.get(`${allUsersRoute}`);
+    setContacts(data.data);
+  }
+
   const handleChatChange = (chat) => {
     setCurrentChat(chat);
   };
@@ -42,7 +47,7 @@ export default function Chat() {
     <>
       <Container>
         <div className="container">
-          <Contacts contacts={contacts} changeChat={handleChatChange} />
+          <Contacts contacts={contacts} changeChat={handleChatChange} updateChats={updateChats} />
           {currentChat === undefined ? (
             <Welcome />
           ) : (

@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import styled from "styled-components";
 import Robot from "../assets/robot.gif";
+import TeamSpeak from "../assets/TeamSpeak.png";
+
 export default function Welcome() {
   const [userName, setUserName] = useState("");
   useEffect(async () => {
@@ -12,7 +14,7 @@ export default function Welcome() {
   }, []);
   return (
     <Container>
-      <img src={Robot} alt="" />
+      <img src={TeamSpeak} alt="" className="welcome-logo" />
       <h1>
         Welcome, <span>{userName}!</span>
       </h1>
@@ -27,6 +29,12 @@ const Container = styled.div`
   align-items: center;
   color: white;
   flex-direction: column;
+  .welcome-logo {
+    width: 100px;
+    height: 100px;
+    margin-bottom: 30px;
+    border-radius: 50%;
+  }
   img {
     height: 20rem;
   }

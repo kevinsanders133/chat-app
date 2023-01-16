@@ -6,6 +6,7 @@ import Logo from "../assets/logo.svg";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { registerRoute } from "../utils/APIRoutes";
+import TeamSpeak from "../assets/TeamSpeak.png";
 
 export default function Register() {
   const navigate = useNavigate();
@@ -89,8 +90,8 @@ export default function Register() {
       <FormContainer>
         <form action="" onSubmit={(event) => handleSubmit(event)}>
           <div className="brand">
-            <img src={Logo} alt="logo" />
-            <h1>snappy</h1>
+            <img src={TeamSpeak} alt="logo" className="registration-logo" />
+            <h1>TEAM.CHAT</h1>
           </div>
           <input
             type="text"
@@ -136,6 +137,9 @@ const FormContainer = styled.div`
   gap: 1rem;
   align-items: center;
   background-color: #131324;
+  .registration-logo {
+    border-radius: 50%;
+  }
   .brand {
     display: flex;
     align-items: center;

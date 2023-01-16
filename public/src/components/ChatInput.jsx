@@ -18,8 +18,9 @@ export default function ChatInput({ handleSendMsg }) {
     setMsg(message);
   };
 
-  const sendChat = (event) => {
+  const sendChat = async (event) => {
     event.preventDefault();
+
     if (msg.length > 0) {
       handleSendMsg(msg);
       setMsg("");

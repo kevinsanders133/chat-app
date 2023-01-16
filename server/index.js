@@ -20,7 +20,7 @@ const io = socket(server, {
 
 // AZURE
 const { ServiceBusClient } = require("@azure/service-bus");
-const connectionString = "Endpoint=sb://chat-app.servicebus.windows.net/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=sQQZXdh0Gep0BDbs/qZ33KtfS3pHuwMckyRpJwCyams=";
+const connectionString = "Endpoint=sb://chat-app.servicebus.windows.net/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=v7wO5htNLe6GmZn017OB1sjvfWONgmSh97wb7V1obK0=";
 const sbClient = new ServiceBusClient(connectionString);
 const queueName = 'messages';
 const sender = sbClient.createSender(queueName);
@@ -45,17 +45,16 @@ io.on('connection', function (socket) {
         socket.join(socket.room);
         users[userId] = socket.id;
     });
-    socket.on('sendmessage', async function (data) {
-        const message = JSON.stringify({
-          type: data.type,
-          text: data.text,
-          data: data.msg,
+    socket.on('sendmessage', async function (message) {
+        const obj = {
+          type: message.type,
+          data: message.data,
           chat_id: socket.room,
-          sernder_id: data.from
-        });
-        console.log(message);
-        await sendMessageToQueue({ body: message });
-        await io.in(socket.room).emit('updatechat', data);
+          sender_id: message.from
+        }
+        const objString = JSON.stringify(obj);
+        await sendMessageToQueue({ body: objString });
+        io.in(socket.room).emit('updatechat', obj);
     });
     socket.on('disconnect', function (userId) {
         delete users[userId];

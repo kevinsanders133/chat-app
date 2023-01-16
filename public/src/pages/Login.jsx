@@ -6,6 +6,7 @@ import Logo from "../assets/logo.svg";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { loginRoute } from "../utils/APIRoutes";
+import TeamSpeak from "../assets/TeamSpeak.png";
 
 export default function Login() {
   const navigate = useNavigate();
@@ -59,8 +60,8 @@ export default function Login() {
       <FormContainer>
         <form action="" onSubmit={(event) => handleSubmit(event)}>
           <div className="brand">
-            <img src={Logo} alt="logo" />
-            <h1>Nekto.chat</h1>
+            <img src={TeamSpeak} alt="logo" className="login-logo" />
+            <h1>TEAM.chat</h1>
           </div>
           <input
             type="email"
@@ -70,7 +71,7 @@ export default function Login() {
             min="3"
           />
           <input
-            type="text"
+            type="password"
             placeholder="Password"
             name="password"
             onChange={(e) => handleChange(e)}
@@ -96,6 +97,9 @@ const FormContainer = styled.div`
   gap: 1rem;
   align-items: center;
   background-color: #131324;
+  .login-logo {
+    border-radius: 50%;
+  }
   .brand {
     display: flex;
     align-items: center;
