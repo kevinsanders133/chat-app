@@ -14,7 +14,7 @@ import ChatFile from "./ChatFile";
 import './Chat.css';
 
 const containerName = 'messages';
-const sasToken = '?sv=2021-06-08&ss=bf&srt=co&sp=rwdlaciytfx&se=2023-01-17T02:13:47Z&st=2023-01-16T18:13:47Z&spr=https,http&sig=pf9iUWWJLBFuFzOgAHUFNA6gsW00Qmtu%2BWvM447MFUU%3D';
+const sasToken = '?sv=2021-06-08&ss=bf&srt=co&sp=rwdlaciytfx&se=2023-01-17T13:52:47Z&st=2023-01-17T05:52:47Z&spr=https,http&sig=B1o%2BwHZW4vsF4GTV2sUIEzJdNmpzTdsJ%2BXH8LoBexvI%3D';
 const storageAccountName = 'chatstorage123';
 
 export default function ChatContainer({ currentChat, currentUserId }) {
@@ -131,7 +131,7 @@ export default function ChatContainer({ currentChat, currentUserId }) {
   };
 
   useEffect(() => {
-    socket.current = io("http://localhost:5000");
+    socket.current = io("http://localhost:5002");
     socket.current.emit("adduser", currentUserId, currentChat.id);
     
     socket.current.on("updatechat", (message) => {

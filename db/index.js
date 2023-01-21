@@ -22,7 +22,7 @@ function getRandomInt(max) {
 
 // AZURE BUS
 const { ServiceBusClient } = require("@azure/service-bus");
-const connectionString = "Endpoint=sb://chat-app.servicebus.windows.net/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=v7wO5htNLe6GmZn017OB1sjvfWONgmSh97wb7V1obK0=";
+const connectionString = "Endpoint=sb://chat-app.servicebus.windows.net/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=4g/Ik8N+276O9qpiwN+IV+3f63cD1kLZNIxL953Az9E=";
 const sbClient = new ServiceBusClient(connectionString);
 const queueName = 'messages';
 // AZURE BUS
@@ -71,7 +71,7 @@ app.post('/api/auth/login', async (req, res) => {
     const requestcheckIfUserExists = new Request(queries.checkIfUserExists, function (err, _) {
       if (err) throw err;
 
-      if (results.atlength === 0) {
+      if (results.length === 0) {
         responseObj = { status: false };
         return;
       }

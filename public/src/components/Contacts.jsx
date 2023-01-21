@@ -33,7 +33,7 @@ export default function Contacts({ contacts, changeChat, updateChats }) {
     const password = document.querySelector('input[name=chatPassword]').value;
 
     if (title !== '' && password !== '') {
-      await axios.post('http://localhost:5001/api/chats/create', {
+      await axios.post('http://localhost:5003/api/chats/create', {
         title,
         password
       });
